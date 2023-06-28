@@ -7,10 +7,10 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-shuttle-runtime = '0.19.0'
-shuttle-axum = '0.19.0'
-shuttle-static-folder = '0.19.0'
-shuttle-secrets = '0.19.0'
+shuttle-runtime = '0.20.0'
+shuttle-axum = '0.20.0'
+shuttle-static-folder = '0.20.0'
+shuttle-secrets = '0.20.0'
 
 tokio = '1.28.2'
 tokio-stream = '0.1.14'

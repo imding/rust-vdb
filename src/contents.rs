@@ -93,7 +93,6 @@ fn has_file_extension(path: &PathBuf, ending: &str) -> bool {
 
 pub fn load_files_from_dir(dir: PathBuf, prefix: &PathBuf, ending: &str) -> Result<Vec<File>> {
     let mut files = Vec::new();
-    // let dir = fs::read_dir(dir)?;
 
     for entry in fs::read_dir(dir)? {
         let path = entry?.path();
@@ -105,7 +104,7 @@ pub fn load_files_from_dir(dir: PathBuf, prefix: &PathBuf, ending: &str) -> Resu
         else if path.is_file() && has_file_extension(&path, ending) {
             let path = Path::new(&path).strip_prefix(prefix)?.to_owned();
 
-            print!("Path: {:?}", path);
+            println!("Path: {:?}", path);
 
             let contents = fs::read_to_string(&path)?;
             let key = path.to_str().ok_or(NotAvailableError {})?;

@@ -29,6 +29,7 @@ impl File {
         let mut state = FileState::None;
         let mut sentence = String::new();
 
+        // TODO: ensure self.contents ends with 2 empty lines
         for line in self.contents.lines() {
             match state {
                 FileState::None => {
@@ -42,10 +43,10 @@ impl File {
                         state = FileState::Meta;
                     }
                     else if !line.starts_with('#') && !line.is_empty() {
-                        state = FileState::Sentence;
                         sentence = String::new();
                         sentence.push_str(line);
-                        sentence.push('\n');
+                        sentence.push('\n');                        
+                        state = FileState::Sentence;
                     }
                 }
 
@@ -67,9 +68,9 @@ impl File {
 
                 FileState::Sentence => {
                     if line.is_empty() {
-                        state = FileState::None;
                         contents.push(sentence);
                         sentence = String::new();
+                        state = FileState::None;
                     }
                     else {
                         sentence.push_str(line);
@@ -114,7 +115,6 @@ pub fn load_files_from_dir(dir: PathBuf, prefix: &PathBuf, ending: &str) -> Resu
             files.push(file);
         }
     }
-
 
     Ok(files)
 }

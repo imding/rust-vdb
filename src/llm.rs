@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, Ok};
 use openai::embeddings::Embeddings;
 use shuttle_secrets::SecretStore;
 
@@ -14,10 +14,9 @@ pub fn setup(secrets: &SecretStore) -> Result<()> {
 
 pub async fn embed_file(file: &File) -> Result<Embeddings> {
     let sentences_as_str: Vec<&str> = file.sentences.iter().map(|s| s.as_str()).collect();
+    let embeddings = Embeddings::create("text-embedding-ada-002", sentences_as_str, "Ding")
+        .await
+        .map_err(|_| EmbeddingError(""))?;
 
-    Ok(
-        Embeddings::create("text-embedding-ada-002", sentences_as_str, "Ding")
-            .await
-            .map_err(|_| EmbeddingError(""))?
-    )
+    Ok(embeddings)
 }

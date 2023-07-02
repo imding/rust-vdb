@@ -1,7 +1,7 @@
 use std::{path::PathBuf, sync::Arc};
 
 use anyhow::Result;
-use axum::{routing::post, Router, response::IntoResponse, extract::State, Json};
+use axum::{extract::State, response::IntoResponse, routing::post, Json, Router};
 
 use axum_macros::debug_handler;
 use axum_streams::StreamBodyAs;
@@ -14,7 +14,11 @@ use tokio_stream::{wrappers::ReceiverStream, StreamExt};
 use tower_http::services::ServeDir;
 use vector::VectorDB;
 
-use crate::{finder::Finder, error::PromptError, llm::{embed_sentence, chat_stream}};
+use crate::{
+    error::PromptError,
+    finder::Finder,
+    llm::{chat_stream, embed_sentence},
+};
 
 mod contents;
 mod error;
@@ -24,12 +28,12 @@ mod vector;
 
 #[derive(Deserialize)]
 struct Prompt {
-    content: String
+    content: String,
 }
 
 struct AppState {
     vector_db: VectorDB,
-    files: Vec<File>
+    files: Vec<File>,
 }
 
 async fn embed_knowledge_base(vector_db: &mut VectorDB, files: &Vec<File>) -> Result<()> {
@@ -46,7 +50,9 @@ async fn embed_knowledge_base(vector_db: &mut VectorDB, files: &Vec<File>) -> Re
     Ok(())
 }
 
-fn chat_completion_stream(chat_completion: Receiver<ChatCompletionDelta>) -> impl Stream<Item = String> {
+fn chat_completion_stream(
+    chat_completion: Receiver<ChatCompletionDelta>,
+) -> impl Stream<Item = String> {
     ReceiverStream::new(chat_completion)
         .map(|completion| completion.choices)
         .map(|choices| {
@@ -61,20 +67,26 @@ fn error_stream() -> impl Stream<Item = String> {
     futures::stream::once(async move { "Error with your prompt".to_string() })
 }
 
-async fn get_completion(prompt: &str, app_state: &AppState) -> anyhow::Result<Receiver<ChatCompletionDelta>> {
+async fn get_completion(
+    prompt: &str,
+    app_state: &AppState,
+) -> anyhow::Result<Receiver<ChatCompletionDelta>> {
     let embedding = embed_sentence(prompt).await?;
     let result = app_state.vector_db.search(embedding).await?;
-    println!("Result: {:?}", result);
     let contents = app_state
         .files
         .get_contents(&result)
         .ok_or(PromptError {})?;
-    
+
+    println!("Result: {:?}", result);
     chat_stream(prompt, contents.as_str()).await
 }
 
 #[debug_handler]
-async fn prompt(State(app_state): State<Arc<AppState>>, Json(prompt): Json<Prompt>) -> impl IntoResponse {
+async fn prompt(
+    State(app_state): State<Arc<AppState>>,
+    Json(prompt): Json<Prompt>,
+) -> impl IntoResponse {
     let prompt = prompt.content;
     let chat_completion = get_completion(&prompt, &app_state).await;
 
@@ -90,7 +102,7 @@ async fn axum(
     #[shuttle_secrets::Secrets] secrets: shuttle_secrets::SecretStore,
     #[shuttle_static_folder::StaticFolder(folder = ".")] prefix: PathBuf,
     #[shuttle_static_folder::StaticFolder(folder = "kb")] kb_folder: PathBuf,
-    #[shuttle_static_folder::StaticFolder(folder = "static")] assets: PathBuf
+    #[shuttle_static_folder::StaticFolder(folder = "static")] assets: PathBuf,
 ) -> shuttle_axum::ShuttleAxum {
     let files = contents::load_files_from_dir(kb_folder, &prefix, ".mdx")?;
     let mut vector_db = VectorDB::new(&secrets)?;

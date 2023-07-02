@@ -24,8 +24,7 @@ impl Finder for Vec<File> {
 
         if let Kind::StringValue(value) = kind {
             self.find(&value)
-        }
-        else {
+        } else {
             None
         }
     }

@@ -1,6 +1,9 @@
-use std::{path::{PathBuf, Path}, fs};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
-use anyhow::{Result, Ok};
+use anyhow::{Ok, Result};
 
 use crate::error::NotAvailableError;
 
@@ -8,19 +11,21 @@ enum FileState {
     None,
     CodeBlock,
     Sentence,
-    Meta
+    Meta,
 }
 
 pub struct File {
     pub path: String,
     pub contents: String,
-    pub sentences: Vec<String>
+    pub sentences: Vec<String>,
 }
 
 impl File {
     pub fn new(path: String, contents: String) -> Self {
         Self {
-            path, contents, sentences: Vec::new()
+            path,
+            contents,
+            sentences: Vec::new(),
         }
     }
 
@@ -38,14 +43,12 @@ impl File {
                         sentence = String::new();
                         sentence.push_str(line);
                         sentence.push('\n');
-                    }
-                    else if line.starts_with("---") {
+                    } else if line.starts_with("---") {
                         state = FileState::Meta;
-                    }
-                    else if !line.starts_with('#') && !line.is_empty() {
+                    } else if !line.starts_with('#') && !line.is_empty() {
                         sentence = String::new();
                         sentence.push_str(line);
-                        sentence.push('\n');                        
+                        sentence.push('\n');
                         state = FileState::Sentence;
                     }
                 }
@@ -71,8 +74,7 @@ impl File {
                         contents.push(sentence);
                         sentence = String::new();
                         state = FileState::None;
-                    }
-                    else {
+                    } else {
                         sentence.push_str(line);
                         sentence.push('\n');
                     }
@@ -101,8 +103,7 @@ pub fn load_files_from_dir(dir: PathBuf, prefix: &PathBuf, ending: &str) -> Resu
         if path.is_dir() {
             let mut sub_files = load_files_from_dir(path, &prefix, ending)?;
             files.append(&mut sub_files);
-        }
-        else if path.is_file() && has_file_extension(&path, ending) {
+        } else if path.is_file() && has_file_extension(&path, ending) {
             let path = Path::new(&path).strip_prefix(prefix)?.to_owned();
 
             println!("Path: {:?}", path);

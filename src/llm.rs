@@ -30,7 +30,7 @@ pub async fn embed_file(file: &File) -> Result<Embeddings> {
     let sentences_as_str: Vec<&str> = file.sentences.iter().map(|s| s.as_str()).collect();
     let embeddings = Embeddings::create("text-embedding-ada-002", sentences_as_str, "Ding")
         .await
-        .map_err(|_| EmbeddingError(""))?;
+        .map_err(|_| EmbeddingError("embed_file"))?;
 
     Ok(embeddings)
 }
@@ -38,7 +38,7 @@ pub async fn embed_file(file: &File) -> Result<Embeddings> {
 pub async fn embed_sentence(sentence: &str) -> Result<Embedding> {
     let embedding = Embedding::create("text-embedding-ada-002", sentence, "Ding")
         .await
-        .map_err(|_| EmbeddingError(""))?;
+        .map_err(|_| EmbeddingError("embed_sentence"))?;
 
     Ok(embedding)
 }
@@ -61,5 +61,5 @@ pub async fn chat_stream(prompt: &str, contents: &str) -> Result<Conversation> {
         }])
         .create_stream()
         .await
-        .map_err(|_| EmbeddingError(""))?)
+        .map_err(|_| EmbeddingError("chat_stream"))?)
 }

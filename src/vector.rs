@@ -67,7 +67,7 @@ impl VectorDB {
     pub async fn upsert_embedding(&mut self, embedding: Embedding, file: &File) -> Result<()> {
         let payload: Payload = json!({ "id": file.path.clone() })
             .try_into()
-            .map_err(|_| EmbeddingError(""))?;
+            .map_err(|_| EmbeddingError("upsert_embedding"))?;
         let vec: Vec<f32> = embedding.vec.iter().map(|&x| x as f32).collect();
         let points = vec![PointStruct::new(self.id, vec, payload)];
 

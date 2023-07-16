@@ -7,10 +7,10 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-shuttle-runtime = '0.20.0'
-shuttle-axum = '0.20.0'
-shuttle-static-folder = '0.20.0'
-shuttle-secrets = '0.20.0'
+shuttle-runtime = '0.21.0'
+shuttle-axum = '0.21.0'
+shuttle-static-folder = '0.21.0'
+shuttle-secrets = '0.21.0'
 
 tokio = '1.28.2'
 tokio-stream = '0.1.14'
@@ -18,7 +18,7 @@ tower-http = { version = '0.4.1', features = ['fs'] }
 
 axum = '0.6.18'
 axum-macros = '0.3.7'
-axum-streams = { version = '0.8.2', features = ['text'] }
+axum-streams = { version = '0.9.0', features = ['text'] }
 
 serde = { version = '1.0.164', features = ['serde_derive']}
 serde_json = '1.0.99'

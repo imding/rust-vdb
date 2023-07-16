@@ -1,9 +1,10 @@
+use core::result::Result::Ok;
 use std::{
     fs,
     path::{Path, PathBuf},
 };
 
-use anyhow::{Ok, Result};
+use anyhow::Result;
 
 use crate::error::NotAvailableError;
 
@@ -43,9 +44,13 @@ impl File {
                         sentence = String::new();
                         sentence.push_str(line);
                         sentence.push('\n');
-                    } else if line.starts_with("---") {
+                    }
+                    //
+                    else if line.starts_with("---") {
                         state = FileState::Meta;
-                    } else if !line.starts_with('#') && !line.is_empty() {
+                    }
+                    //
+                    else if !line.starts_with('#') && !line.is_empty() {
                         sentence = String::new();
                         sentence.push_str(line);
                         sentence.push('\n');
@@ -74,7 +79,9 @@ impl File {
                         contents.push(sentence);
                         sentence = String::new();
                         state = FileState::None;
-                    } else {
+                    }
+                    //
+                    else {
                         sentence.push_str(line);
                         sentence.push('\n');
                     }
@@ -97,24 +104,36 @@ fn has_file_extension(path: &PathBuf, ending: &str) -> bool {
 pub fn load_files_from_dir(dir: PathBuf, prefix: &PathBuf, ending: &str) -> Result<Vec<File>> {
     let mut files = Vec::new();
 
-    for entry in fs::read_dir(dir)? {
-        let path = entry?.path();
+    match fs::read_dir(dir) {
+        Ok(entries) => {
+            for entry in entries {
+                match entry {
+                    Ok(entry) => {
+                        let path = entry.path();
 
-        if path.is_dir() {
-            let mut sub_files = load_files_from_dir(path, &prefix, ending)?;
-            files.append(&mut sub_files);
-        } else if path.is_file() && has_file_extension(&path, ending) {
-            let path = Path::new(&path).strip_prefix(prefix)?.to_owned();
+                        if path.is_dir() {
+                            let mut sub_files = load_files_from_dir(path, &prefix, ending)?;
+                            files.append(&mut sub_files);
+                        }
+                        //
+                        else if path.is_file() && has_file_extension(&path, ending) {
+                            let path = Path::new(&path).strip_prefix(prefix)?.to_owned();
 
-            println!("Path: {:?}", path);
+                            println!("Path: {:?}", path);
 
-            let contents = fs::read_to_string(&path)?;
-            let key = path.to_str().ok_or(NotAvailableError {})?;
-            let mut file = File::new(key.to_string(), contents);
+                            let contents = fs::read_to_string(&path)?;
+                            let key = path.to_str().ok_or(NotAvailableError {})?;
+                            let mut file = File::new(key.to_string(), contents);
 
-            file.parse();
-            files.push(file);
+                            file.parse();
+                            files.push(file);
+                        }
+                    }
+                    Err(err) => eprintln!("{:?}", err),
+                }
+            }
         }
+        Err(err) => eprintln!("fs::read_dir | {:?}", err),
     }
 
     Ok(files)
